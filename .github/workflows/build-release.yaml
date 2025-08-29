@@ -17,13 +17,13 @@ jobs:
           fetch-depth: 0
       
       - name: Checkout submodules
-        run: git submodule update --init --recursive --remote
+        run: git submodule update --init --recursive --force
 
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
-          java-version: 17
+          distribution: "temurin"
+          java-version: 21
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -31,7 +31,7 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.23"
+          go-version: "1.25"
 
       - uses: actions/cache@v4
         with:
@@ -76,6 +76,12 @@ jobs:
             git tag "v$newVersionName"
             git push --follow-tags
           fi
+
+      - name: Update CA
+        run: |
+          sudo apt-get update && sudo apt-get install ca-certificates
+          sudo update-ca-certificates
+          cp -f /etc/ssl/certs/ca-certificates.crt core/src/foss/golang/clash/component/ca/ca-certificates.crt
 
       - name: Signing properties
         env:
